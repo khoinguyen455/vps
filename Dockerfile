@@ -35,7 +35,6 @@
 
 FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
-ENV USER=render
 ENV PASS=123456
 EXPOSE 8080/tcp 22/tcp
 RUN apt update && \
@@ -51,9 +50,7 @@ RUN apt update && \
 RUN pip install jupyterlab jupyter notebook --break-system-packages
 RUN echo "Port 22" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
-    echo "PermitRootLogin no" >> /etc/ssh/sshd_config
-RUN useradd -m -s /bin/bash $USER && \
-    echo "$USER:$PASS" | chpasswd && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers.d/$USER
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "root:$PASS" | chpasswd
 CMD service ssh start && \
-    runuser -u $USER -- jupyter lab --ip=0.0.0.0 --port=8080 --no-browser --LabApp.allow_origin='*' --LabApp.token='' --LabApp.password='' --LabApp.disable_check_xsrf=True
+    jupyter lab --ip=0.0.0.0 --port=8080 --no-browser --allow-root --LabApp.allow_origin='*' --LabApp.token='' --LabApp.password='' --LabApp.disable_check_xsrf=True
