@@ -15,7 +15,7 @@ def setup_pip():
             print("-> Cài đặt pip thành công qua ensurepip.")
         except Exception:
             print("-> Đang tải get-pip.py để cài đặt...")
-            urllib.request.urlretrieve("https://pypa.io", "get-pip.py")
+            urllib.request.urlretrieve("https://bootstrap.pypa.io/get-pip.py", "get-pip.py")
             subprocess.run([sys.executable, "get-pip.py"], check=True)
             os.remove("get-pip.py")
             print("-> Cài đặt pip thành công.")
