@@ -20,7 +20,7 @@ os.makedirs("/tmp/work", exist_ok=True)
 log_file = open("/tmp/jupyter.log", "w")
 jupyter_proc = subprocess.Popen(
     [
-        sys.executable, "-m", "jupyter", "lab",
+        sys.executable, "-m", "jupyterlab",  # <-- Sửa từ "jupyter", "lab" thành "jupyterlab"
         "--ip=127.0.0.1",
         "--port=8888",
         "--no-browser",
@@ -35,6 +35,7 @@ jupyter_proc = subprocess.Popen(
     stdout=log_file,
     stderr=subprocess.STDOUT
 )
+
 
 # 3. Chuyển tiếp (Proxy) toàn bộ HTTP request vào cổng 8888
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
