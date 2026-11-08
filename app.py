@@ -26,7 +26,7 @@ subprocess.Popen(
 # Chuyển tiếp (Proxy) toàn bộ HTTP request vào JupyterLab
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
 async def proxy_jupyter(request: Request, path: str):
-    url = f"http://127.0.0{path}"
+    url = f"http://127.0.0.1:8888/{path}"
     if request.query_params:
         url += f"?{request.query_params}"
 
