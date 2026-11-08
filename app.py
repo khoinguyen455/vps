@@ -7,12 +7,24 @@ from fastapi import FastAPI, Request, Response
 
 app = FastAPI()
 
-# 1. Ép toàn bộ cấu hình và dữ liệu vào /tmp (nơi duy nhất Vercel cho phép ghi file)
+# 1. Tìm đúng đường dẫn thư mục assets của JupyterLab trên Vercel
+lab_dir = os.path.abspath("share/jupyter/lab")
+if not os.path.exists(lab_dir):
+    for p in sys.path:
+        candidate = os.path.join(p, "share", "jupyter", "lab")
+        if os.path.exists(candidate):
+            lab_dir = candidate
+            break
+
+# 2. Cấu hình biến môi trường
 env = os.environ.copy()
 env["HOME"] = "/tmp"
 env["JUPYTER_CONFIG_DIR"] = "/tmp/.jupyter"
 env["JUPYTER_DATA_DIR"] = "/tmp/.local/share/jupyter"
 env["JUPYTER_RUNTIME_DIR"] = "/tmp/.local/share/jupyter/runtime"
+env["JUPYTERLAB_DIR"] = lab_dir  # <-- Trỏ đúng thư mục giao diện web
+
+os.makedirs("/tmp/work", exist_ok=True)
 
 os.makedirs("/tmp/work", exist_ok=True)
 
