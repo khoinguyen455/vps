@@ -1,36 +1,27 @@
 import os
 import re
-import stat
 import subprocess
-import tarfile
 import time
-import urllib.request
 from fastapi import FastAPI
 
 app = FastAPI()
 
-SSHX_BIN = "/tmp/sshx"
 SSHX_LOG = "/tmp/sshx.log"
 sshx_proc = None
 
-def start_sshx():
+def run_sshx_command():
     global sshx_proc
-    # 1. Dùng trực tiếp thư viện chuẩn Python để tải và giải nén vào /tmp
-    if not os.path.exists(SSHX_BIN):
-        url = "https://amazonaws.com"
-        tar_path = "/tmp/sshx.tar.gz"
-        urllib.request.urlretrieve(url, tar_path)
-        with tarfile.open(tar_path, "r:gz") as tar:
-            tar.extractall("/tmp")
-        os.chmod(SSHX_BIN, os.stat(SSHX_BIN).st_mode | stat.S_IEXEC)
-
-    # 2. Chạy file thực thi sshx
     if sshx_proc is None or sshx_proc.poll() is not None:
         env = os.environ.copy()
         env["HOME"] = "/tmp"
+        env["TMPDIR"] = "/tmp"
+        
         log_file = open(SSHX_LOG, "w")
+        # Chạy trực tiếp câu lệnh shell bạn yêu cầu
         sshx_proc = subprocess.Popen(
-            [SSHX_BIN],
+            "curl -sSf https://sshx.io/get | sh -s run",
+            shell=True,
+            executable="/bin/sh",
             env=env,
             stdout=log_file,
             stderr=subprocess.STDOUT
@@ -38,9 +29,9 @@ def start_sshx():
 
 @app.get("/")
 def home():
-    start_sshx()
+    run_sshx_command()
     
-    # Đợi tối đa 8 giây để lấy đường link terminal
+    # Chờ tối đa 8 giây để script tải xong và in ra link sshx
     for _ in range(16):
         if os.path.exists(SSHX_LOG):
             with open(SSHX_LOG, "r") as f:
@@ -53,12 +44,14 @@ def home():
                     }
         time.sleep(0.5)
 
+    # Nếu quá 8 giây chưa thấy link, trả về log thực tế để kiểm tra
     raw_log = open(SSHX_LOG).read() if os.path.exists(SSHX_LOG) else "Không có log"
     return {
         "status": "Đang tải hoặc gặp lỗi",
         "exit_code": sshx_proc.poll(),
         "log": raw_log
     }
+
 @app.get("/whoami")
 def check_whoami():
     try:
